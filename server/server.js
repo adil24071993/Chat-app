@@ -15,6 +15,17 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => { //same variable as defined in HTML
   console.log('New user connected');
 
+  socket.emit('newMessage',{
+    "from": "Admin",
+    "message": "Welcome to chat app"
+  });
+
+  socket.broadcast.emit('newMessage',{
+    "from": "Admin",
+    "message": "New user joined",
+    "createdAt": new Date().getTime()
+  });
+
   socket.on('createMessage', (newMessage) => {
     console.log(newMessage);
     io.emit('newMessage', {
@@ -22,6 +33,11 @@ io.on('connection', (socket) => { //same variable as defined in HTML
       text: newMessage.text,
       createdAt: new Date().getTime()
     });
+    // socket.broadcast.emit('newMessage', {
+    //   from: newMessage.from,
+    //   text: newMessage.text,
+    //   createdAt: new Date().getTime()
+    // });
   });
 
   socket.on('disconnect', () => {
