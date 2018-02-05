@@ -8,8 +8,8 @@ describe('generateMessage', () => {
     var text = "Some message";
     var message = generateMessage(from, text);
 
-    console.log(message)
-    expect(message.createdAt).toBe("number");
+
+    expect(message.createdAt).toBeA("number"); // works in specific expect version
     expect(message).toInclude({from,text});
   });
 });
