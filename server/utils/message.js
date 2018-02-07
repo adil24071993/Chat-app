@@ -2,11 +2,12 @@ var moment = require('moment');
 
 var currentTimeStamp = moment().valueOf();
 
-var generateMessage = (from, text) => {
+var generateMessage = (from, text, style) => {
   return {
     from,
     text,
-    createdAt: currentTimeStamp
+    createdAt: currentTimeStamp,
+    style
   };
 };
 

@@ -1,4 +1,5 @@
 var socket = io();
+var params = $.deparam(window.location.search);
 
 function scrollToBottom (){
   //Selectors
@@ -17,7 +18,6 @@ function scrollToBottom (){
 }
 
 socket.on('connect', function() {
-  var params = $.deparam(window.location.search);
 
   socket.emit('join', params, function(error){
     if(error){
@@ -36,19 +36,29 @@ socket.on('disconnect', function() {
 socket.on('updateUserList', function(users){
   var ol = $('<ol></ol>');
   users.forEach(function(user){
-    ol.append($('<li></li>').text(user));
+    if(params.name === user){
+        ol.append($('<li class="active-user"></li>').text(user));
+    }else{
+      ol.append($('<li></li>').text(user));
+    }
   });
 
   $('#users').html(ol);
 });
 
 socket.on('newMessage', function(message){
+  if(params.name === message.from){
+    message.style="float-right"
+  }else{
+    message.style="float-left"
+  }
   var formattedTime = moment(message.createdAt).format('h:mm a');
   var template = $('#message-template').html();
   var html = Mustache.render(template, {
     text: message.text,
     from: message.from,
-    createdAt: formattedTime
+    createdAt: formattedTime,
+    style: message.style
   });
   $('#messages').append(html);
   scrollToBottom();
@@ -56,12 +66,18 @@ socket.on('newMessage', function(message){
 
 
 socket.on('newLocationMessage', function(message){
+  if(params.name === message.from){
+    message.style="float-right"
+  }else{
+    message.style="float-left"
+  }
   var formattedTime = moment(message.createdAt).format('h:mm a');
   var template = $('#location-message-template').html();
   var html = Mustache.render(template, {
     from: message.from,
     url: message.url,
-    createdAt: formattedTime
+    createdAt: formattedTime,
+    style: message.style
   });
   $('#messages').append(html);
   scrollToBottom();
@@ -75,7 +91,7 @@ $('#message-form').on('submit', function(e){
 
   socket.emit('createMessage', {
     text: messageTextBox.val()
-  }, function(){
+  }, function(text){
     messageTextBox.val('');
   });
 });
@@ -88,7 +104,6 @@ locationButton.on('click', function(){
   }
   locationButton.attr('disabled','disabled').text('Sending location..');
   navigator.geolocation.getCurrentPosition(function(position){
-    console.log(position);
     locationButton.removeAttr('disabled','disabled').text('Send location');;
     socket.emit('createLocationMessage', {
       latitude: position.coords.latitude,
